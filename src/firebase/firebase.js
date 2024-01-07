@@ -1,17 +1,14 @@
-import { getAuth } from "firebase/auth"; // import getAuth
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore"; // import getFirestore
+import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database"; 
+import { getAuth } from "firebase/auth"; // import getAuth
+// Import getDatabase
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDkF2nuFhyqdrqGKUU9EjtKYkSEURogh0A",
   authDomain: "eduapp-a334b.firebaseapp.com",
+  databaseURL:
+    "https://eduapp-a334b-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "eduapp-a334b",
   storageBucket: "eduapp-a334b.appspot.com",
   messagingSenderId: "402865479446",
@@ -19,9 +16,9 @@ const firebaseConfig = {
   measurementId: "G-18SBTQ1GK2",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const db = getFirestore(app); // Use 'db' for Firestore
+const realdb = getDatabase(app); // Use 'realdb' for Realtime Database
 const auth = getAuth(app);
-const db = getFirestore(app);
-export { app, analytics, auth , db};
+
+export { app, db, auth, realdb }; // Export Firestore as 'db' and Realtime Database as 'realdb'

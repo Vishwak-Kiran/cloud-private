@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from "react";
 import AWS from "aws-sdk";
 import ReactS3Client from "react-s3-typescript";
+import { realdb, db } from "./firebase/firebase";
+import {
+  getDatabase,
+  ref,
+  update as updateDatabase,
+  increment as databaseIncrement,
+} from "firebase/database";
+import {
+  getFirestore,
+  updateDoc,
+  increment as firestoreIncrement,
+} from "firebase/firestore";
+// Importing Firestore app to initialize it
 
 const Upload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [objectList, setObjectList] = useState([]);
+  const [userApproval, setUserApproval] = useState({});
+  const [votes, setVotes] = useState({});
+  const [totalUsers, setTotalUsers] = useState(5);
 
   const config = {
     bucketName: process.env.REACT_APP_BUCKET_NAME,
@@ -36,7 +52,8 @@ const Upload = () => {
         "File uploaded successfully. Location:",
         process.env.REACT_APP_REGION
       );
-      listObjects(); // Update the object list after uploading
+      listObjects();
+      realdb.ref("requests").child(selectedFile.name).set({ count: 1 });
     } catch (error) {
       console.error("Error uploading file:", error);
     } finally {
@@ -64,10 +81,35 @@ const Upload = () => {
     }
   };
 
-  // Call listObjects when the component mounts
-  useEffect(() => {
-    listObjects();
-  }, []); // Empty dependency array to run the effect only once
+  const handleRequest = async (objectKey) => {
+    const sanitizedKey = objectKey.replace(/[.#$[\]]/g, "_");
+    await updateDatabase(ref(realdb, `requests/${sanitizedKey}`), {
+      count: databaseIncrement(1),
+    });
+
+    setUserApproval((prevApproval) => ({
+      ...prevApproval,
+      [sanitizedKey]: true,
+    }));
+
+    // Initialize votes for this file to 0
+    setVotes((prevVotes) => ({
+      ...prevVotes,
+      [sanitizedKey]: 0,
+    }));
+  };
+
+  const handleVote = async (objectKey) => {
+    console.log("Voting for object:", objectKey);
+    await updateDoc(ref(db, `votes/${objectKey}`), {
+      count: firestoreIncrement(1),
+    });
+
+    setVotes((prevVotes) => ({
+      ...prevVotes,
+      [objectKey]: (prevVotes[objectKey] || 0) + 1,
+    }));
+  };
 
   const getObjectUrl = (objectKey) => {
     const s3 = new AWS.S3({
@@ -79,6 +121,39 @@ const Upload = () => {
       Bucket: process.env.REACT_APP_BUCKET_NAME,
       Key: objectKey,
     });
+  };
+
+  useEffect(() => {
+    listObjects();
+  }, []);
+
+  const ApprovalStatus = ({ objectKey }) => {
+    if (!userApproval[objectKey]) {
+      return null;
+    }
+
+    const approvalCount = votes[objectKey] || 0;
+
+    return (
+      <div style={{ marginTop: "10px" }}>
+        <span>
+          {approvalCount}/{totalUsers}
+        </span>
+        {approvalCount === totalUsers && (
+          <span style={{ marginLeft: "10px", color: "green" }}>
+            All users approved!{" "}
+            <a
+              href={getObjectUrl(objectKey)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: "none", color: "green" }}
+            >
+              View/Download
+            </a>
+          </span>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -118,14 +193,10 @@ const Upload = () => {
                 <td style={{ padding: "10px" }}>{object.Key}</td>
                 <td style={{ padding: "10px" }}>{object.Size}</td>
                 <td style={{ padding: "10px" }}>
-                  <a
-                    href={getObjectUrl(object.Key)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: "none", color: "#0066cc" }}
-                  >
-                    View/Download
-                  </a>
+                  <button onClick={() => handleRequest(object.Key)}>
+                    Request
+                  </button>
+                  <ApprovalStatus objectKey={object.Key} />
                 </td>
               </tr>
             ))}
