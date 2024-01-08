@@ -4,6 +4,8 @@ import { doc, setDoc, collection, addDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
 
+import { getDatabase, ref, set as setRealtimeDb } from "firebase/database";
+
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +48,14 @@ const Signup = () => {
         name: name,
         email: email,
         status: "pending",
-        uid:user.uid,
+        uid: user.uid,
+      });
+
+      // Add user data to Realtime Database
+      const realtimeDbRef = ref(getDatabase(), `users/${user.uid}`);
+      await setRealtimeDb(realtimeDbRef, {
+        name: name,
+        uid: user.uid,
       });
 
       // Send notification to Group Manager
