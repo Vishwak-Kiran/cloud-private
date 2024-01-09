@@ -135,7 +135,7 @@ const GroupManagerDashboard = () => {
   }
 
   return (
-    <div>
+    <div className="group-manager-container">
       <h1>Group Manager Dashboard</h1>
       <button onClick={handleSignOut}>Sign Out</button>
 

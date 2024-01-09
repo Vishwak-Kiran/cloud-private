@@ -87,7 +87,6 @@ const Upload = () => {
     }
   };
 
-
   const listObjects = async () => {
     const s3ListObjects = new AWS.S3({
       accessKeyId: process.env.REACT_APP_ACCESS,
@@ -234,11 +233,24 @@ const Upload = () => {
   return (
     <div className="container">
       <div className="header">React S3 File Upload</div>
-      <input type="file" onChange={handleFileInput} className="file-input" />
-      <br />
-      <button onClick={uploadFile} disabled={isUploading} className="button">
-        {isUploading ? "Uploading..." : "Upload to S3"}
-      </button>
+      {user.currentUser.uid === "3AaNaCSUkwSCtus9yt9JfS1WWin1" ||
+      user.currentUser.displayName === "admin" ? (
+        <>
+          <input
+            type="file"
+            onChange={handleFileInput}
+            className="file-input"
+          />
+          <br />
+          <button
+            onClick={uploadFile}
+            disabled={isUploading}
+            className="button"
+          >
+            {isUploading ? "Uploading..." : "Upload to S3"}
+          </button>
+        </>
+      ) : null}
       <button onClick={logout} className="button button-secondary">
         Logout
       </button>
