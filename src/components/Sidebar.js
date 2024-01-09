@@ -4,7 +4,13 @@ import { realdb } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
 import AWS from "aws-sdk";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBars,
+  faDownload,
+  faCheck,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom"; // Make sure to import Link if you are using React Router
 
 import "./Sidebar.css";
 
@@ -47,18 +53,43 @@ const Sidebar = () => {
             !acceptedRequests.includes(otherUserId) &&
             !votedUsers.includes(otherUserId)
           ) {
+            const requestedFile = usersData[otherUserId].requestedFile;
+            const fileType = getFileType(requestedFile);
+
             updatedIncomingRequests.push({
               userId: otherUserId,
-              requestedFile: usersData[otherUserId].requestedFile,
+              requestedFile: requestedFile,
               userName: usersData[otherUserId].name,
               votes: usersData[otherUserId].votes || 0,
-              fileType: usersData[otherUserId].fileType || "N/A",
+              fileType: fileType,
             });
           }
         }
 
         setIncomingRequests(updatedIncomingRequests);
       });
+
+      const getFileType = (filename) => {
+        // Use underscores (_) as separators
+        const parts = filename.split("_");
+        const extension = parts.pop().toLowerCase();
+
+        // Map specific file extensions to their types (you can extend this list)
+        const fileTypeMap = {
+          pdf: "PDF Document",
+          doc: "Word Document",
+          docx: "Word Document",
+          xls: "Excel Spreadsheet",
+          xlsx: "Excel Spreadsheet",
+          txt: "Text File",
+          jpg: "Image",
+          jpeg: "Image",
+          png: "Image",
+          gif: "Image",
+        };
+
+        return fileTypeMap[extension] || "N/A";
+      };
 
       const votesRef = realdbRef(realdb, `votes/${userId}`);
       const unsubscribeVotes = onValue(votesRef, (snapshot) => {
@@ -237,7 +268,6 @@ const Sidebar = () => {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
-
   return (
     <>
       <button className="toggle-button" onClick={toggleSidebar}>
@@ -272,26 +302,28 @@ const Sidebar = () => {
             <h3>Incoming Requests</h3>
             {incomingRequests.map((request) => (
               <div key={request.userId} className="incoming-request">
-                <div>
-                  Request from: {request.userName}
+                <div className="incoming-request-details">
+                  <span>Request from:</span> {request.userName}
                   <br />
-                  Requested File: {request.requestedFile}
+                  <span>Requested File:</span> {request.requestedFile}
                   <br />
-                  File Type: {request.fileType}
+                  <span>File Type:</span> {request.fileType}
                   <br />
-                  Votes: {request.votes} / {totalUsers}
+                  <span>Votes:</span> {request.votes} / {totalUsers}
                 </div>
-                {request.votes === totalUsers && (
-                  <button onClick={() => handleDownload(request.userId)}>
-                    Download
+                <div className="incoming-request-buttons">
+                  {request.votes === totalUsers && (
+                    <button onClick={() => handleDownload(request.userId)}>
+                      <FontAwesomeIcon icon={faDownload} /> Download
+                    </button>
+                  )}
+                  <button onClick={() => handleAccept(request.userId)}>
+                    <FontAwesomeIcon icon={faCheck} /> Accept
                   </button>
-                )}
-                <button onClick={() => handleAccept(request.userId)}>
-                  Accept
-                </button>
-                <button onClick={() => handleDecline(request.userId)}>
-                  Decline
-                </button>
+                  <button onClick={() => handleDecline(request.userId)}>
+                    <FontAwesomeIcon icon={faTimes} /> Decline
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -43,7 +43,7 @@ const SignIn = () => {
   };
 
   return (
-    <div>
+    <div className="form-container signin-form">
       <form onSubmit={(event) => sub(event)}>
         <div>
           <label>Email</label>

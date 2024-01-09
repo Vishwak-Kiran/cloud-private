@@ -1,33 +1,74 @@
 .sidebar {
-  width: 0;
+  width: 250px;
+  height: 100%;
   position: fixed;
   top: 0;
-  left: 0;
-  height: 100vh;
-  background-color: #333;
+  left: -250px;
+  background-color: #111;
   overflow-x: hidden;
   transition: 0.5s;
   padding-top: 60px;
+  color: white;
 }
 
 .sidebar.open {
-  width: 250px;
+  left: 0;
 }
 
 .sidebar-content {
   padding: 15px;
-  color: white;
 }
 
 .toggle-button {
   position: fixed;
   top: 20px;
-  left: 0.5rem;
+  left: 20px;
   background-color: #3498db;
   color: #fff;
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
   border: none;
-  z-index: 1000;
+  z-index: 1001;
+}
+
+.incoming-request {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.incoming-request-details {
+  margin-bottom: 10px;
+}
+
+.incoming-request-details span {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.incoming-request-buttons {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  align-self: flex-end;
+}
+
+.incoming-request button {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.incoming-request button:hover {
+  background-color: #297fb8;
 }

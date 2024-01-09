@@ -79,7 +79,8 @@ const Signup = () => {
   };
 
   return (
-    <form onSubmit={signup}>
+    <form className="form-container signup-form" onSubmit={signup}>
+      <label>Name</label>
       <input
         type="text"
         placeholder="Name"
@@ -87,6 +88,7 @@ const Signup = () => {
         value={name}
         required
       />
+      <label>Email</label>
       <input
         type="email"
         placeholder="Email"
@@ -94,6 +96,7 @@ const Signup = () => {
         value={email}
         required
       />
+      <label>Password</label>
       <input
         type="password"
         placeholder="Password"
@@ -104,7 +107,7 @@ const Signup = () => {
       <button type="submit" disabled={loading}>
         Sign Up
       </button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p>{error}</p>}
     </form>
   );
 };
