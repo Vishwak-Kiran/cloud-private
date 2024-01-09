@@ -4,6 +4,8 @@ import ReactS3Client from "react-s3-typescript";
 import { realdb, db, auth } from "./firebase/firebase";
 import { useAuth } from "./context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { onValue, update, get } from "firebase/database";
+import "./Upload.css"; // Import your CSS file
 
 import {
   ref as realdbRef,
@@ -69,19 +71,22 @@ const Upload = () => {
     const s3 = new ReactS3Client(config);
 
     try {
-      const data = await s3.uploadFile(selectedFile);
+      const fileKey = selectedFile.name.replace(/[.#$[\]]/g, "_");
+      const data = await s3.uploadFile(selectedFile, fileKey);
       console.log(
         "File uploaded successfully. Location:",
         process.env.REACT_APP_REGION
       );
+      console.log(data);
       listObjects();
-      realdb.ref("requests").child(selectedFile.name).set({ count: 1 });
+      realdb.ref("requests").child(fileKey).set({ count: 1 });
     } catch (error) {
       console.error("Error uploading file:", error);
     } finally {
       setIsUploading(false);
     }
   };
+
 
   const listObjects = async () => {
     const s3ListObjects = new AWS.S3({
@@ -145,27 +150,27 @@ const Upload = () => {
 
     const userId = currentUser?.uid;
     const userDocRef = doc(db, "users", userId);
+    const userRealDbRef = realdbRef(realdb, `users/${userId}`);
 
     try {
-      await updateRealtimeDb(realdbRef(realdb, `users/${userId}`), {
+      // Fetch the current votes from the real-time database
+      const userRealDbSnapshot = await get(userRealDbRef);
+      const userRealDbData = userRealDbSnapshot.val();
+      const currentVotes = userRealDbData?.votes || 0;
+
+      if (currentVotes !== 0) {
+        alert("You already have votes. Cannot request again.");
+        setIsRequesting(false);
+        return;
+      }
+
+      // Update the real-time database for the request
+      await updateRealtimeDb(userRealDbRef, {
         requestedFile: sanitizedKey,
-        votes: 0,
+        votes: 1,
       });
 
-      await updateRealtimeDb(realdbRef(realdb, `requests/${sanitizedKey}`), {
-        count: databaseIncrement(1),
-      });
-
-      setUserApproval((prevApproval) => ({
-        ...prevApproval,
-        [sanitizedKey]: true,
-      }));
-
-      setVotes((prevVotes) => ({
-        ...prevVotes,
-        [sanitizedKey]: 0,
-      }));
-
+      // Update the Firestore document
       await setDoc(
         userDocRef,
         {
@@ -227,47 +232,38 @@ const Upload = () => {
   };
 
   return (
-    <div style={{ textAlign: "center", maxWidth: "600px", margin: "auto" }}>
-      <div style={{ fontSize: "24px", marginBottom: "20px" }}>
-        React S3 File Upload
-      </div>
-      <input
-        type="file"
-        onChange={handleFileInput}
-        style={{ marginBottom: "10px" }}
-      />
+    <div className="container">
+      <div className="header">React S3 File Upload</div>
+      <input type="file" onChange={handleFileInput} className="file-input" />
       <br />
-      <button onClick={uploadFile} disabled={isUploading}>
+      <button onClick={uploadFile} disabled={isUploading} className="button">
         {isUploading ? "Uploading..." : "Upload to S3"}
       </button>
-      <button onClick={logout}>Logout</button>
-      <div style={{ marginTop: "30px" }}>
+      <button onClick={logout} className="button button-secondary">
+        Logout
+      </button>
+      <div className="object-list">
         <h2>List of Objects</h2>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "10px",
-          }}
-        >
+        <table className="table">
           <thead>
-            <tr style={{ borderBottom: "1px solid #ddd" }}>
-              <th style={{ padding: "10px" }}>Object Key</th>
-              <th style={{ padding: "10px" }}>Size</th>
-              <th style={{ padding: "10px" }}>Actions</th>
+            <tr>
+              <th>Object Key</th>
+              <th>Size</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {objectList.map((object) => (
-              <tr key={object.Key} style={{ borderBottom: "1px solid #ddd" }}>
-                <td style={{ padding: "10px" }}>{object.Key}</td>
-                <td style={{ padding: "10px" }}>{object.Size}</td>
-                <td style={{ padding: "10px" }}>
+              <tr key={object.Key}>
+                <td>{object.Key}</td>
+                <td>{object.Size}</td>
+                <td className="object-actions">
                   <button
                     onClick={() => handleRequest(object.Key)}
                     disabled={
                       userRequests.includes(object.Key) || hasActiveRequests
                     }
+                    className="button"
                   >
                     Request
                   </button>

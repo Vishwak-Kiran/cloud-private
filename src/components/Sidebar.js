@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { ref as realdbRef, onValue, set, update } from "firebase/database";
+import { ref as realdbRef, onValue, update, get, set } from "firebase/database";
 import { realdb } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
+import AWS from "aws-sdk";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
 
 import "./Sidebar.css";
 
@@ -10,6 +13,11 @@ const Sidebar = () => {
   const [userData, setUserData] = useState({});
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [acceptedRequests, setAcceptedRequests] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [votedUsers, setVotedUsers] = useState([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   const user = useAuth();
 
   useEffect(() => {
@@ -17,68 +25,213 @@ const Sidebar = () => {
 
     if (userId) {
       const userRef = realdbRef(realdb, `users/${userId}`);
-
-      const unsubscribe = onValue(userRef, (snapshot) => {
+      const unsubscribeUser = onValue(userRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setUserData(data);
         }
       });
 
-      // Fetch incoming requests
       const usersRef = realdbRef(realdb, "users");
-      const incomingRequests = [];
-
-      onValue(usersRef, (snapshot) => {
+      const unsubscribeRequests = onValue(usersRef, (snapshot) => {
         const usersData = snapshot.val();
-        for (const userId in usersData) {
+        const updatedIncomingRequests = [];
+
+        const totalUsersCount = Object.keys(usersData).length;
+        setTotalUsers(totalUsersCount);
+
+        for (const otherUserId in usersData) {
           if (
-            userId !== user.currentUser.uid &&
-            usersData[userId].requestedFile &&
-            !acceptedRequests.includes(userId) // Filter out accepted requests
+            otherUserId !== userId &&
+            usersData[otherUserId].requestedFile &&
+            !acceptedRequests.includes(otherUserId) &&
+            !votedUsers.includes(otherUserId)
           ) {
-            incomingRequests.push({
-              userId: userId,
-              requestedFile: usersData[userId].requestedFile,
-              userName: usersData[userId].name,
+            updatedIncomingRequests.push({
+              userId: otherUserId,
+              requestedFile: usersData[otherUserId].requestedFile,
+              userName: usersData[otherUserId].name,
+              votes: usersData[otherUserId].votes || 0,
+              fileType: usersData[otherUserId].fileType || "N/A",
             });
           }
         }
 
-        setIncomingRequests(incomingRequests);
+        setIncomingRequests(updatedIncomingRequests);
       });
 
-      return () => unsubscribe();
+      const votesRef = realdbRef(realdb, `votes/${userId}`);
+      const unsubscribeVotes = onValue(votesRef, (snapshot) => {
+        const votesData = snapshot.val();
+        if (votesData) {
+          setVotedUsers(Object.keys(votesData));
+        }
+      });
+
+      // Load accepted requests from Firebase
+      const acceptedRequestsRef = realdbRef(
+        realdb,
+        `acceptedRequests/${userId}`
+      );
+
+      const unsubscribeAcceptedRequests = onValue(
+        acceptedRequestsRef,
+        (snapshot) => {
+          const acceptedRequestsData = snapshot.val();
+          if (acceptedRequestsData) {
+            setAcceptedRequests(Object.keys(acceptedRequestsData));
+          }
+        }
+      );
+
+      return () => {
+        unsubscribeUser();
+        unsubscribeRequests();
+        unsubscribeVotes();
+        unsubscribeAcceptedRequests();
+      };
     }
-  }, [user.currentUser, acceptedRequests]);
+  }, [user.currentUser, acceptedRequests, votedUsers]);
 
   const handleAccept = async (userId) => {
-    // Handle the accept action, e.g., update the database
     const userRef = realdbRef(realdb, `users/${userId}`);
-    console.log("userRef", userRef);
-    console.log("userData", userData);
+
+    if (votedUsers.includes(user.currentUser.uid)) {
+      console.log("You have already voted for this request.");
+      return;
+    }
+
+    const userSnapshot = await get(userRef);
+    const userData = userSnapshot.val();
+
+    if (userData) {
+      const updateData = {
+        votes: userData.votes ? userData.votes + 1 : 1,
+      };
+
+      const votersRef = realdbRef(realdb, `users/${userId}/voters`);
+      await update(votersRef, { [user.currentUser.uid]: true });
+
+      await update(userRef, updateData);
+
+      setAcceptedRequests((prevAcceptedRequests) => [
+        ...prevAcceptedRequests,
+        userId,
+      ]);
+
+      localStorage.setItem(
+        "acceptedRequests",
+        JSON.stringify([...acceptedRequests, userId])
+      );
+
+      console.log(`Request button state: enabled`);
+      console.log(`Votes after accept: ${updateData.votes}`);
+
+      const updatedVotesSnapshot = await get(userRef);
+      const updatedVotesData = updatedVotesSnapshot.val();
+
+      console.log(
+        `Real-time fetch of votes after accept: ${updatedVotesData.votes}`
+      );
+
+      setVotedUsers([...votedUsers, user.currentUser.uid]);
+
+      // Update the accepted requests in the Firebase database
+      const acceptedRequestsRef = realdbRef(
+        realdb,
+        `acceptedRequests/${user.currentUser.uid}`
+      );
+      await update(acceptedRequestsRef, { [userId]: true });
+    } else {
+      console.error("User data not found");
+    }
+  };
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+  const handleDecline = async (userId) => {
+    const userRef = realdbRef(realdb, `users/${userId}`);
     const updateData = {
-      votes: userData.votes ? userData.votes + 1 : 1,
+      requestedFile: "",
+      votes: 0,
     };
 
     await update(userRef, updateData);
 
-    // Remove the accepted request from incomingRequests
-    setAcceptedRequests((prevAcceptedRequests) => [
-      ...prevAcceptedRequests,
-      userId,
-    ]);
+    // Remove all accepted requests from local storage
+    setAcceptedRequests([]);
+    localStorage.setItem("acceptedRequests", " ");
+
+    // Remove the requester's UID from every other user's acceptedRequests
+    const allUsersRef = realdbRef(realdb, "users");
+    const allUsersSnapshot = await get(allUsersRef);
+    const allUsersData = allUsersSnapshot.val();
+
+    for (const otherUserId in allUsersData) {
+      if (otherUserId !== userId) {
+        const otherUserAcceptedRequestsRef = realdbRef(
+          realdb,
+          `acceptedRequests/${otherUserId}`
+        );
+        await update(otherUserAcceptedRequestsRef, { [userId]: null });
+      }
+    }
   };
 
-  const handleDecline = (userId) => {
-    // Handle the decline action, e.g., update the database
+  const handleDownload = async (userId) => {
     const userRef = realdbRef(realdb, `users/${userId}`);
-    const updateData = {
-      votes: 0, // Reset votes to 0
-      // Update other details as needed
-    };
+    const userSnapshot = await get(userRef);
+    const userData = userSnapshot.val();
 
-    update(userRef, updateData);
+    if (userData && userData.requestedFile) {
+      const objectKey = userData.requestedFile.replace(/_/g, ".");
+
+      const s3 = new AWS.S3({
+        accessKeyId: process.env.REACT_APP_ACCESS,
+        secretAccessKey: process.env.REACT_APP_SECRET,
+        region: process.env.REACT_APP_REGION,
+      });
+
+      const params = {
+        Bucket: process.env.REACT_APP_BUCKET_NAME,
+        Key: objectKey,
+      };
+
+      try {
+        // Get a signed URL for the requested file
+        const downloadUrl = await s3.getSignedUrlPromise("getObject", params);
+
+        // Open the signed URL in a new tab
+        window.open(downloadUrl, "_blank");
+      } catch (error) {
+        console.error("Error getting signed URL:", error);
+      }
+
+      // Reset the user's data after download
+      const updateData = {
+        requestedFile: null,
+        votes: 0,
+      };
+
+      await update(userRef, updateData);
+
+      // Remove the requester's UID from every other user's acceptedRequests
+      const allUsersRef = realdbRef(realdb, "users");
+      const allUsersSnapshot = await get(allUsersRef);
+      const allUsersData = allUsersSnapshot.val();
+
+      for (const otherUserId in allUsersData) {
+        if (otherUserId !== userId) {
+          const otherUserAcceptedRequestsRef = realdbRef(
+            realdb,
+            `acceptedRequests/${otherUserId}`
+          );
+          await update(otherUserAcceptedRequestsRef, { [userId]: null });
+        }
+      }
+    } else {
+      console.error("Requested file not found");
+    }
   };
 
   const toggleSidebar = () => {
@@ -86,49 +239,65 @@ const Sidebar = () => {
   };
 
   return (
-    <div className={`sidebar ${isOpen ? "open" : ""}`}>
+    <>
       <button className="toggle-button" onClick={toggleSidebar}>
-        blah bla
+        <FontAwesomeIcon icon={faBars} />
       </button>
-      <div className="sidebar-content">
-        {user.currentUser && (
-          <div>
-            <div>User: {userData.name}</div>
-          </div>
-        )}
-
-        {/* Your Request Section */}
-        <div>
-          <h3>Your Request</h3>
-          {userData?.requestedFile && (
+      <div className={`sidebar ${isOpen ? "open" : ""}`}>
+        <div className="sidebar-content">
+          {user.currentUser && (
             <div>
-              <div>Requested File: {userData.requestedFile}</div>
-              <div>Votes: {userData.votes || 0}</div>
-              {/* Add more details as needed */}
+              <div>User: {user.currentUser.email}</div>
             </div>
           )}
-        </div>
 
-        {/* Incoming Requests Section */}
-        <div>
-          <h3>Incoming Requests</h3>
-          {incomingRequests.map((request) => (
-            <div key={request.userId} className="incoming-request">
+          {/* Your Request Section */}
+          <div>
+            <h3>Your Request</h3>
+            {userData?.requestedFile && (
               <div>
-                User: {request.userName}, Requested File:{" "}
-                {request.requestedFile}
+                <div>Requested File: {userData.requestedFile}</div>
+                <div>Votes: {userData.votes || 0}</div>
+                {userData.votes === totalUsers && (
+                  <button onClick={() => handleDownload(user.currentUser.uid)}>
+                    Download
+                  </button>
+                )}
               </div>
-              <button onClick={() => handleAccept(request.userId)}>
-                Accept
-              </button>
-              <button onClick={() => handleDecline(request.userId)}>
-                Decline
-              </button>
-            </div>
-          ))}
+            )}
+          </div>
+
+          {/* Incoming Requests Section */}
+          <div>
+            <h3>Incoming Requests</h3>
+            {incomingRequests.map((request) => (
+              <div key={request.userId} className="incoming-request">
+                <div>
+                  Request from: {request.userName}
+                  <br />
+                  Requested File: {request.requestedFile}
+                  <br />
+                  File Type: {request.fileType}
+                  <br />
+                  Votes: {request.votes} / {totalUsers}
+                </div>
+                {request.votes === totalUsers && (
+                  <button onClick={() => handleDownload(request.userId)}>
+                    Download
+                  </button>
+                )}
+                <button onClick={() => handleAccept(request.userId)}>
+                  Accept
+                </button>
+                <button onClick={() => handleDecline(request.userId)}>
+                  Decline
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

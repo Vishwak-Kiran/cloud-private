@@ -1,0 +1,80 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  text-align: center;
+  background-color: #fff;
+  padding: 20px;
+  margin-top: 50px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.file-input {
+  margin-bottom: 10px;
+}
+
+.button {
+  background-color: #3498db;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+}
+
+.button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.button-secondary {
+  background-color: #e74c3c;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table th,
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  text-align: left;
+}
+
+.object-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.object-actions button {
+  margin-right: 10px;
+}
+
+.approval-status {
+  margin-top: 10px;
+}
+
+.approval-status span {
+  margin-left: 10px;
+}
+
+.approval-status span.green {
+  color: green;
+}
