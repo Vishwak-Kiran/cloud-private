@@ -233,12 +233,12 @@ const Upload = () => {
 
   return (
     <div className="container">
-      <div className="header">React S3 File Upload</div>
-      <input type="file" onChange={handleFileInput} className="file-input" />
+      <div className="header">File Retrieval</div>
+      {/* <input type="file" onChange={handleFileInput} className="file-input" />
       <br />
       <button onClick={uploadFile} disabled={isUploading} className="button">
         {isUploading ? "Uploading..." : "Upload to S3"}
-      </button>
+      </button> */}
       <button onClick={logout} className="button button-secondary">
         Logout
       </button>

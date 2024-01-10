@@ -215,7 +215,8 @@ const Sidebar = () => {
     const userData = userSnapshot.val();
 
     if (userData && userData.requestedFile) {
-      const objectKey = userData.requestedFile.replace(/_/g, ".");
+     const objectKey = userData.requestedFile.replace(/_(?=[^_]*$)/, ".");
+
 
       const s3 = new AWS.S3({
         accessKeyId: process.env.REACT_APP_ACCESS,

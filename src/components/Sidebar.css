@@ -1,9 +1,9 @@
 .sidebar {
-  width: 250px;
+  width: 300px;
   height: 100%;
   position: fixed;
   top: 0;
-  left: -250px;
+  left: -300px;
   background-color: #111;
   overflow-x: hidden;
   transition: 0.5s;
