@@ -53,7 +53,7 @@ const GroupManagerLogin = () => {
   };
 
   return (
-    <div>
+    <div className="form-container signin-form">
       <form onSubmit={handleGroupManagerLogin}>
         <div>
           <label>Email</label>

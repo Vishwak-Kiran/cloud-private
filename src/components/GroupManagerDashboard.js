@@ -137,22 +137,42 @@ const GroupManagerDashboard = () => {
   return (
     <div className="group-manager-container">
       <h1>Group Manager Dashboard</h1>
-      <button onClick={handleSignOut}>Sign Out</button>
-
+      <button className="button button-secondary" onClick={handleSignOut}>
+        Sign Out
+      </button>
+      <br></br>
+      <br></br>
+      <br></br>
       <div>
         <input type="file" onChange={handleFileInput} />
-        <button onClick={handleUpload} disabled={isUploading}>
+        <button
+          className="button"
+          onClick={handleUpload}
+          disabled={isUploading}
+        >
           {isUploading ? "Uploading..." : "Upload to S3"}
         </button>
       </div>
-
+      <br></br>
+      <br></br>
+      
       <h2>Pending Sign-Up Requests:</h2>
       <ul>
         {users.map((user) => (
           <li key={user.uid}>
             {user.name} - {user.email}
-            <button onClick={() => handleAcceptUser(user.uid)}>Accept</button>
-            <button onClick={() => handleRejectUser(user.uid)}>Reject</button>
+            <button
+              className="button"
+              onClick={() => handleAcceptUser(user.uid)}
+            >
+              Accept
+            </button>
+            <button
+              className="button button-secondary"
+              onClick={() => handleRejectUser(user.uid)}
+            >
+              Reject
+            </button>
           </li>
         ))}
       </ul>
