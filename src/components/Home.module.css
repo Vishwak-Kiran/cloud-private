@@ -1,0 +1,161 @@
+.page {
+  width: 100%;
+  height: 100%;
+}
+
+.nav {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ddd ;
+}
+
+.navTitle {
+  font-size: 24px;
+}
+
+.navList {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.navItem {
+  font-size: 20px;
+  list-style: none;
+  text-transform: uppercase;
+  padding: 0px 40px;
+}
+
+.signupTitle {
+  font-size: 24px;
+}
+
+.homeContainer {
+  width: 100%;
+  height: 600px;
+  display: flex;
+  align-items: center;
+}
+
+.page2 {
+  width: 100%;
+  height: 18vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leftTitle {
+  font-size: 90px;
+  line-height: 100px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.left {
+  width: 50%;
+  z-index: 1;
+}
+
+.right {
+  width: 50%;
+}
+
+.right img {
+  width: 100%;
+  z-index: -4;
+  border-radius: 30px;
+}
+
+.circleImg {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-left: -50px;
+  object-fit: cover;
+  border: 7px solid #000;
+}
+
+.left span:nth-child(1) {
+  margin-left: 40px;
+}
+
+.box {
+  width: 390px;
+  height: 300px;
+  padding: 15px;
+  margin: 50px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  border: 3px solid #fff;
+}
+
+.box h2 {
+  margin-bottom: 20px;
+  font-size: 40px;
+}
+
+.box p {
+  font-size: 20px;
+}
+
+@media screen and (max-width: 1000px) {
+  .left {
+    width: 100%;
+    margin: 50px 0;
+  }
+
+  .right {
+    width: 100%;
+  }
+
+  .leftTitle {
+    font-size: 60px;
+    line-height: 80px;
+  }
+
+  .circleImg {
+    width: 70px;
+    height: 70px;
+    border: 3px solid #000;
+  }
+
+  .navItem {
+    font-size: 16px;
+    padding: 0px 20px;
+  }
+
+  .homeContainer {
+    flex-direction: column;
+    height: fit-content;
+  }
+
+  .box {
+    width: fit-content;
+    height: fit-content;
+    margin: 20px;
+  }
+
+  .right img {
+    width: 100%;
+    z-index: -4;
+    border-radius: 30px;
+  }
+
+  .box h2 {
+    margin-bottom: 20px;
+    font-size: 30px;
+  }
+
+  .box p {
+    font-size: 15px;
+  }
+}

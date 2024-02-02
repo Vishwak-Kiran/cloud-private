@@ -79,7 +79,22 @@ const Signup = () => {
   };
 
   return (
+    <>
+    <h1
+      style={{
+        fontSize: '2em',
+        color: '#27ae60',
+        marginBottom: '20px',
+        transition: 'color 0.3s ease-in-out',
+        cursor: 'pointer',
+      }}
+      onMouseEnter={(e) => e.target.style.color = '#c0392b'}
+      onMouseLeave={(e) => e.target.style.color = '#27ae60'}
+    >
+      🌟 Join Our Community! Create an Account 🌟
+    </h1>
     <form className="form-container signup-form" onSubmit={signup}>
+      
       <label>Name</label>
       <input
         type="text"
@@ -109,6 +124,7 @@ const Signup = () => {
       </button>
       {error && <p>{error}</p>}
     </form>
+    </>
   );
 };
 

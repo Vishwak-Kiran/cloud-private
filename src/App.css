@@ -149,12 +149,7 @@
   animation: spin 1s linear infinite;
   margin-right: 5px;
 }
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
-}
+
 
 .group-manager-container {
   max-width: 800px;
@@ -218,3 +213,5 @@ body {
   animation: spin 1s linear infinite;
   margin-right: 5px;
 }
+
+

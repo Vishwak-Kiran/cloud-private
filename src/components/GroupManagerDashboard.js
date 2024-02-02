@@ -136,7 +136,10 @@ const GroupManagerDashboard = () => {
 
   return (
     <div className="group-manager-container">
-      <h1>Group Manager Dashboard</h1>
+      <h1 style={{ textAlign: "center", fontSize: "2.5em", color: "#3498db" }}>
+        Group Manager Dashboard
+      </h1>
+
       <button className="button button-secondary" onClick={handleSignOut}>
         Sign Out
       </button>
@@ -155,7 +158,7 @@ const GroupManagerDashboard = () => {
       </div>
       <br></br>
       <br></br>
-      
+
       <h2>Pending Sign-Up Requests:</h2>
       <ul>
         {users.map((user) => (

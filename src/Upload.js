@@ -58,7 +58,7 @@ const Upload = () => {
     }
   };
 
-  const currentUser = user.currentUser;
+  const currentUser = user.currentUser || {};
 
   const uploadFile = async () => {
     if (!selectedFile) {
@@ -231,62 +231,75 @@ const Upload = () => {
   };
 
   return (
-    <div className="container">
-      <div className="header">React S3 File Upload</div>
-      {user.currentUser.uid === "3AaNaCSUkwSCtus9yt9JfS1WWin1" ||
-      user.currentUser.displayName === "admin" ? (
-        <>
-          <input
-            type="file"
-            onChange={handleFileInput}
-            className="file-input"
-          />
-          <br />
-          <button
-            onClick={uploadFile}
-            disabled={isUploading}
-            className="button"
-          >
-            {isUploading ? "Uploading..." : "Upload to S3"}
-          </button>
-        </>
-      ) : null}
-      <button onClick={logout} className="button button-secondary">
-        Logout
-      </button>
-      <div className="object-list">
-        <h2>List of Objects</h2>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Object Key</th>
-              <th>Size</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {objectList.map((object) => (
-              <tr key={object.Key}>
-                <td>{object.Key}</td>
-                <td>{object.Size}</td>
-                <td className="object-actions">
-                  <button
-                    onClick={() => handleRequest(object.Key)}
-                    disabled={
-                      userRequests.includes(object.Key) || hasActiveRequests
-                    }
-                    className="button"
-                  >
-                    Request
-                  </button>
-                  <ApprovalStatus objectKey={object.Key} />
-                </td>
+    <>
+      <h1
+        style={{
+          fontSize: "2em",
+          color: "#e67e22",
+          marginBottom: "20px",
+          transition: "color 0.3s ease-in-out",
+          cursor: "pointer",
+        }}
+        onMouseEnter={(e) => (e.target.style.color = "#3498db")}
+        onMouseLeave={(e) => (e.target.style.color = "#e67e22")}
+      >
+        🚀 File Upload Center - Share and Collaborate! 🚀
+      </h1>
+      <div className="container">
+        <div className="header">React S3 File Upload</div>
+        
+          <>
+            <input
+              type="file"
+              onChange={handleFileInput}
+              className="file-input"
+            />
+            <br />
+            <button
+              onClick={uploadFile}
+              disabled={isUploading}
+              className="button"
+            >
+              {isUploading ? "Uploading..." : "Upload to S3"}
+            </button>
+          </>
+        <button onClick={logout} className="button button-secondary">
+          Logout
+        </button>
+        <div className="object-list">
+          <h2>List of Objects</h2>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Object Key</th>
+                <th>Size</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {objectList.map((object) => (
+                <tr key={object.Key}>
+                  <td>{object.Key}</td>
+                  <td>{object.Size}</td>
+                  <td className="object-actions">
+                    <button
+                      onClick={() => handleRequest(object.Key)}
+                      disabled={
+                        userRequests.includes(object.Key) || hasActiveRequests
+                      }
+                      className="button"
+                    >
+                      Request
+                    </button>
+                    <ApprovalStatus objectKey={object.Key} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

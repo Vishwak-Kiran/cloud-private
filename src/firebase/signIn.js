@@ -43,29 +43,44 @@ const SignIn = () => {
   };
 
   return (
-    <div className="form-container signin-form">
-      <form onSubmit={(event) => sub(event)}>
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPwd(e.target.value)}
-          />
-        </div>
-        <div>
-          <button>Sign In</button>
-        </div>
-      </form>
-    </div>
+    <>
+      <h1
+        style={{
+          fontSize: "2em",
+          color: "#3498db",
+          marginBottom: "20px",
+          transition: "color 0.3s ease-in-out",
+          cursor: "pointer",
+        }}
+        onMouseEnter={(e) => (e.target.style.color = "#e74c3c")}
+        onMouseLeave={(e) => (e.target.style.color = "#3498db")}
+      >
+        🌟 Welcome Back! Sign in to Your Account 🌟
+      </h1>
+      <div className="form-container signin-form">
+        <form onSubmit={(event) => sub(event)}>
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="Email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Password"
+              onChange={(e) => setPwd(e.target.value)}
+            />
+          </div>
+          <div>
+            <button>Sign In</button>
+          </div>
+        </form>
+      </div>
+    </>
   );
 };
 

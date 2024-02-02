@@ -17,6 +17,7 @@
     "buffer": "^6.0.3",
     "dotenv": "^16.0.0",
     "firebase": "^10.7.1",
+    "gsap": "^3.12.5",
     "react": "^18.0.0",
     "react-aws-s3": "^1.5.0",
     "react-bootstrap": "^2.9.2",
